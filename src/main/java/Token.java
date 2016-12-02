@@ -10,30 +10,28 @@ import java.util.List;
 
 
 public class Token implements Comparable<Token> {
+    private String tokenName;
     private Word word;
     private Attributes attributes;
     private List<Posting> postingList;
 
     public Token(Word word, Attributes attributes) {
+        this.tokenName = word.word;
         this.word = word;
         this.attributes = attributes;
         this.postingList = new ArrayList<Posting>();
     }
 
-    public Word getWord() {
-        return word;
+    public Token(String tokenName) {
+        this.tokenName = tokenName;
     }
 
-    public void setWord(Word word) {
-        this.word = word;
+    public String getTokenName() {
+        return tokenName;
     }
 
-    public Attributes getAttributes() {
-        return attributes;
-    }
-
-    public void setAttributes(Attributes attributes) {
-        this.attributes = attributes;
+    public List<Posting> getPostingList() {
+        return postingList;
     }
 
     public void addPosting(Posting posting) {
@@ -51,6 +49,6 @@ public class Token implements Comparable<Token> {
     }
 
     public int compareTo(Token token) {
-        return this.word.word.compareTo(token.getWord().word);
+        return this.tokenName.compareTo(token.getTokenName());
     }
 }

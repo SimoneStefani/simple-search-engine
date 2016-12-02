@@ -1,12 +1,11 @@
-import se.kth.id1020.util.Attributes;
-import se.kth.id1020.util.Document;
-import se.kth.id1020.util.Word;
-
-import java.util.Comparator;
-
 /**
  * Created by S. Stefani on 2016-11-27.
  */
+
+import se.kth.id1020.util.Attributes;
+import se.kth.id1020.util.Document;
+import se.kth.id1020.util.Word;
+import java.util.Comparator;
 
 public class Posting implements Comparable<Posting> {
     public String postingName;
@@ -39,9 +38,9 @@ public class Posting implements Comparable<Posting> {
         return this.postingName.compareTo(posting.getPostingName());
     }
 
-    public class PostingComparator implements Comparator<Posting> {
-        private String property;
-        private boolean direction;
+    public static class PostingComparator implements Comparator<Posting> {
+        private String property = "popularity";
+        private boolean direction = true;
 
         public PostingComparator(String property, boolean direction) {
             this.property = property;
@@ -55,6 +54,10 @@ public class Posting implements Comparable<Posting> {
                 return byOccurrence(pst1, pst2);
             else
                 return 0;
+        }
+
+        public boolean greaterThan(Posting pst1, Posting pst2) {
+            return compare(pst1, pst2) > 0;
         }
 
         private int byOccurrence(Posting pst1, Posting pst2) {
