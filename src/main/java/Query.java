@@ -1,9 +1,12 @@
+/**
+ * Query.java
+ *
+ * Created by S. Stefani on 2016-12-02.
+ */
+
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by S. Stefani on 2016-12-02.
- */
 public class Query {
     private List<String> words;
     private Posting.PostingComparator cmp;
@@ -13,14 +16,31 @@ public class Query {
         this.cmp = new Posting.PostingComparator("popularity", true);
     }
 
+    /**
+     * Get the searched words.
+     *
+     * @return an array of words
+     */
     public List<String> getWords() {
         return words;
     }
 
+    /**
+     * Get a comparator with specific comparison criteria based on the query.
+     * Default: popularity, ascending.
+     *
+     * @return a posting comparator
+     */
     public Posting.PostingComparator getComparator() {
         return cmp;
     }
 
+    /**
+     * Parse a query string and extract the searched words together with the optional
+     * arguments property and direction
+     *
+     * @param queryInput is the query string
+     */
     public void parseQuery(String queryInput) {
         String[] query = queryInput.split("\\s+");
         int queryLength = query.length;

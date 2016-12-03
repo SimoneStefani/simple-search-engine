@@ -1,6 +1,6 @@
 /**
  * TinySearchEngine.java
- * <p>
+ *
  * Created by S. Stefani on 2016-11-24.
  */
 
@@ -8,7 +8,6 @@ import se.kth.id1020.TinySearchEngineBase;
 import se.kth.id1020.util.Attributes;
 import se.kth.id1020.util.Document;
 import se.kth.id1020.util.Word;
-
 import java.util.*;
 
 public class TinySearchEngine implements TinySearchEngineBase {
@@ -47,7 +46,7 @@ public class TinySearchEngine implements TinySearchEngineBase {
         return resultList;
     }
 
-    public void sort(List<Posting> list, Posting.PostingComparator cmp) {
+    private void sort(List<Posting> list, Posting.PostingComparator cmp) {
 
         int r = list.size() - 2;
         boolean swapped = true;
@@ -55,7 +54,7 @@ public class TinySearchEngine implements TinySearchEngineBase {
         while (r >= 0 && swapped) {
             swapped = false;
             for (int i = 0; i <= r; i++) {
-                if (cmp.isGreaterThan(list.get(i), list.get(i + 1))) {
+                if (cmp.compare(list.get(i), list.get(i + 1)) > 0) {
                     swapped = true;
                     Collections.swap(list, i, i + 1);
                 }
@@ -63,7 +62,6 @@ public class TinySearchEngine implements TinySearchEngineBase {
             r--;
         }
     }
-
 
     private List<Posting> fetchFromIndex(String word) {
         Token token = new Token(word);

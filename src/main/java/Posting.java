@@ -1,4 +1,6 @@
 /**
+ * Posting.java
+ *
  * Created by S. Stefani on 2016-11-27.
  */
 
@@ -22,6 +24,13 @@ public class Posting implements Comparable<Posting> {
         this.hits = 1;
     }
 
+    /**
+     * When a document with an existing posting is added to the index we
+     * increment the number of hits (the number of times a word appears in the same
+     * document and we update the occurrence (after how many words it appears).
+     *
+     * @param posting is the posting we are adding the word to
+     */
     public void addDoc(Posting posting) {
         if (posting.getOccurrence() < this.occurrence) {
             this.occurrence = posting.getOccurrence();
@@ -29,26 +38,57 @@ public class Posting implements Comparable<Posting> {
         this.hits++;
     }
 
+    /**
+     * Get the occurrence of a word in a specific document.
+     *
+     * @return the occurrence
+     */
     public int getOccurrence() {
         return occurrence;
     }
 
+    /**
+     * The posting name encapsulates in a simple way the name of the document
+     * referred by the posting.
+     *
+     * @return the posting name
+     */
     public String getPostingName() {
         return postingName;
     }
 
+    /**
+     * The number of times a word appear in a document.
+     *
+     * @return the number of hits
+     */
     public int getHits() {
         return hits;
     }
 
+    /**
+     * The document referred by the posting.
+     *
+     * @return the document
+     */
     public Document getDocument() {
         return document;
     }
 
+    /**
+     * Simple way of comparing postings based on the posting name (alphabetic order).
+     *
+     * @param posting is the posting we want to compare to
+     * @return
+     */
     public int compareTo(Posting posting) {
         return this.postingName.compareTo(posting.getPostingName());
     }
 
+    /**
+     * A more advanced comparator. It compares the postings base on popularity, occurrence and relevance
+     * considering both ascending and descending order.
+     */
     public static class PostingComparator implements Comparator<Posting> {
         private String property;
         private boolean direction;
@@ -66,16 +106,11 @@ public class Posting implements Comparable<Posting> {
             this.direction = direction;
         }
 
-
-        public boolean isGreaterThan(Posting pst1, Posting pst2) {
-            return compare(pst1, pst2) > 0 ? true : false;
-        }
-
         public int compare(Posting pst1, Posting pst2) {
             if (property.equals("popularity"))
                 return byPopularity(pst1, pst2);
             else if (property.equals("relevance"))
-                return relevance(pst1, pst2);
+                return byRelevance(pst1, pst2);
             else if (property.equals("occurrence"))
                 return byOccurrence(pst1, pst2);
             else
@@ -100,7 +135,7 @@ public class Posting implements Comparable<Posting> {
             else { return 0; }
         }
 
-        private int relevance(Posting pst1, Posting pst2) {
+        private int byRelevance(Posting pst1, Posting pst2) {
             int diff = pst1.getHits() - pst2.getHits();
             diff = direction ? diff : -diff;
 
