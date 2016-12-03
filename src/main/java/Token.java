@@ -43,7 +43,7 @@ public class Token implements Comparable<Token> {
             if (postingPosition < 0) {
                 postingList.add(posting);
             } else {
-                postingList.get(postingPosition).incrementOccurrence(posting);
+                postingList.get(postingPosition).addDoc(posting);
             }
         }
     }

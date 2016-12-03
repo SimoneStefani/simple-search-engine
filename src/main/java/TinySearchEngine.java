@@ -33,34 +33,21 @@ public class TinySearchEngine implements TinySearchEngineBase {
         newQuery.parseQuery(search);
 
         List<Posting> postings = fetchFromIndex(newQuery.getWords().get(0));
-        int wordsNum = newQuery.getWords().size();
 
-        System.out.println(newQuery.getWords());
-        while (wordsNum > 1) {
-            List<Posting> unionList = fetchFromIndex(newQuery.getWords().get(wordsNum - 1));
-            if (postings == null) { postings = unionList; }
-            for (Posting posting : unionList) {
-                int index = Collections.binarySearch(postings, posting);
-                if (index < 0) { postings.add(~index, posting); }
-            }
-            wordsNum--;
-        }
-
-        System.out.println(postings);
-
-        sort(postings, newQuery.getProperty(), newQuery.getDirection());
+        union(newQuery, postings);
         if (postings == null) { return null; }
+
+        sort(postings, newQuery.getComparator());
 
         List<Document> resultList = new ArrayList<Document>();
         for (Posting pst : postings) {
-            resultList.add(pst.document);
+            resultList.add(pst.getDocument());
         }
 
         return resultList;
     }
 
-    public void sort(List<Posting> list, String property, boolean direction) {
-        Posting.PostingComparator cmp = new Posting.PostingComparator(property, direction);
+    public void sort(List<Posting> list, Posting.PostingComparator cmp) {
 
         int r = list.size() - 2;
         boolean swapped = true;
@@ -68,7 +55,7 @@ public class TinySearchEngine implements TinySearchEngineBase {
         while (r >= 0 && swapped) {
             swapped = false;
             for (int i = 0; i <= r; i++) {
-                if (cmp.greaterThan(list.get(i), list.get(i + 1))) {
+                if (cmp.isGreaterThan(list.get(i), list.get(i + 1))) {
                     swapped = true;
                     Collections.swap(list, i, i + 1);
                 }
@@ -86,6 +73,20 @@ public class TinySearchEngine implements TinySearchEngineBase {
         else {
             return index.get(tokenPosition).getPostingList();
 
+        }
+    }
+
+    private void union(Query newQuery, List<Posting> postings) {
+        int wordsNum = newQuery.getWords().size();
+        while (wordsNum > 1) {
+            List<Posting> unionList;
+            unionList = fetchFromIndex(newQuery.getWords().get(wordsNum - 1));
+            if (postings == null) { postings = unionList; }
+            for (Posting posting : unionList) {
+                int index = Collections.binarySearch(postings, posting);
+                if (index < 0) { postings.add(~index, posting); }
+            }
+            wordsNum--;
         }
     }
 }
