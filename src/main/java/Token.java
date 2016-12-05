@@ -7,15 +7,13 @@
 import se.kth.id1020.util.Attributes;
 import se.kth.id1020.util.Word;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 
 public class Token implements Comparable<Token> {
     private String tokenName;
     private Word word;
     private Attributes attributes;
-    private List<Posting> postingList;
+    private ArrayList<Posting> postingList;
 
     /**
      * Creates a complete token containing a Word and its Attributes.
@@ -54,7 +52,7 @@ public class Token implements Comparable<Token> {
      *
      * @return a list of postings
      */
-    public List<Posting> getPostingList() {
+    public ArrayList<Posting> getPostingList() {
         return postingList;
     }
 
@@ -65,10 +63,11 @@ public class Token implements Comparable<Token> {
      * @param posting is the posting to insert
      */
     public void addPosting(Posting posting) {
+        BinarySearch bs = new BinarySearch();
         if (postingList.isEmpty()) {
             postingList.add(posting);
         } else {
-            int postingPosition = Collections.binarySearch(postingList, posting);
+            int postingPosition = bs.search(posting, postingList);
 
             if (postingPosition < 0) {
                 postingList.add(posting);

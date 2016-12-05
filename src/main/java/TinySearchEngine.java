@@ -11,12 +11,13 @@ import se.kth.id1020.util.Word;
 import java.util.*;
 
 public class TinySearchEngine implements TinySearchEngineBase {
-    public List<Token> index = new ArrayList<Token>();
+    public ArrayList<Token> index = new ArrayList<Token>();
+    public BinarySearch bs = new BinarySearch();
 
     public void insert(Word word, Attributes attributes) {
         Token token = new Token(word, attributes);
 
-        int tokenPosition = Collections.binarySearch(index, token);
+        int tokenPosition = bs.search(token, index);
 
         if (tokenPosition < 0) {
             token.addPosting(new Posting(word, attributes));
@@ -31,7 +32,7 @@ public class TinySearchEngine implements TinySearchEngineBase {
         Query newQuery = new Query();
         newQuery.parseQuery(search);
 
-        List<Posting> postings = fetchFromIndex(newQuery.getWords().get(0));
+        ArrayList<Posting> postings = fetchFromIndex(newQuery.getWords().get(0));
 
         union(newQuery, postings);
         if (postings == null) { return null; }
@@ -63,9 +64,9 @@ public class TinySearchEngine implements TinySearchEngineBase {
         }
     }
 
-    private List<Posting> fetchFromIndex(String word) {
+    private ArrayList<Posting> fetchFromIndex(String word) {
         Token token = new Token(word);
-        int tokenPosition = Collections.binarySearch(index, token);
+        int tokenPosition = bs.search(token, index);
         if (tokenPosition < 0)
             return null;
         else {
@@ -74,14 +75,14 @@ public class TinySearchEngine implements TinySearchEngineBase {
         }
     }
 
-    private void union(Query newQuery, List<Posting> postings) {
+    private void union(Query newQuery, ArrayList<Posting> postings) {
         int wordsNum = newQuery.getWords().size();
         while (wordsNum > 1) {
-            List<Posting> unionList;
+            ArrayList<Posting> unionList;
             unionList = fetchFromIndex(newQuery.getWords().get(wordsNum - 1));
             if (postings == null) { postings = unionList; }
             for (Posting posting : unionList) {
-                int index = Collections.binarySearch(postings, posting);
+                int index = bs.search(posting, postings);
                 if (index < 0) { postings.add(~index, posting); }
             }
             wordsNum--;
