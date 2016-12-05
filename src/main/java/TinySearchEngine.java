@@ -32,9 +32,8 @@ public class TinySearchEngine implements TinySearchEngineBase {
         Query newQuery = new Query();
         newQuery.parseQuery(search);
 
-        ArrayList<Posting> postings = fetchFromIndex(newQuery.getWords().get(0));
+        ArrayList<Posting> postings = union(newQuery);
 
-        union(newQuery, postings);
         if (postings == null) { return null; }
 
         sort(postings, newQuery.getComparator());
@@ -75,17 +74,29 @@ public class TinySearchEngine implements TinySearchEngineBase {
         }
     }
 
-    private void union(Query newQuery, ArrayList<Posting> postings) {
+    private ArrayList<Posting> union(Query newQuery) {
+        ArrayList<Posting> postings = new ArrayList<Posting>();
+        if (fetchFromIndex(newQuery.getWords().get(0)) == null) {
+            postings = null;
+        } else {
+            postings.addAll(fetchFromIndex(newQuery.getWords().get(0)));
+        }
+
         int wordsNum = newQuery.getWords().size();
         while (wordsNum > 1) {
             ArrayList<Posting> unionList;
             unionList = fetchFromIndex(newQuery.getWords().get(wordsNum - 1));
-            if (postings == null) { postings = unionList; }
+            if (postings == null) {
+                postings = unionList;
+            }
             for (Posting posting : unionList) {
                 int index = bs.search(posting, postings);
-                if (index < 0) { postings.add(~index, posting); }
+                if (index < 0) {
+                    postings.add(~index, posting);
+                }
             }
             wordsNum--;
         }
+        return postings;
     }
 }
