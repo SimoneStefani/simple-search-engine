@@ -109,7 +109,7 @@ public class Posting implements Comparable<Posting> {
         public int compare(Posting pst1, Posting pst2) {
             if (property.equals("popularity"))
                 return byPopularity(pst1, pst2);
-            else if (property.equals("relevance"))
+            else if (property.equals("count"))
                 return byRelevance(pst1, pst2);
             else if (property.equals("occurrence"))
                 return byOccurrence(pst1, pst2);
