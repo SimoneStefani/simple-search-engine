@@ -11,8 +11,9 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: se.kth.id1020:tinySearchEngine:1.0" level="project" />
+    <orderEntry type="library" name="Maven: se.kth.id1020:tinySearchEngine:2.0" level="project" />
     <orderEntry type="library" name="Maven: com.aliasi:lingpipe:4.0.1" level="project" />
+    <orderEntry type="library" name="Maven: com.google.guava:guava:17.0" level="project" />
     <orderEntry type="library" name="Maven: edu.princeton.cs.introcs:algs4-package:1.0" level="project" />
     <orderEntry type="library" name="Maven: edu.princeton.cs.introcs:stdlib-package:1.0" level="project" />
   </component>
