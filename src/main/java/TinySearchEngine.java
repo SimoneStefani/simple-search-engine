@@ -16,6 +16,7 @@ import java.util.List;
 
 public class TinySearchEngine implements TinySearchEngineBase {
     public HashMap<Word, ArrayList<Posting>> index = new HashMap<Word, ArrayList<Posting>>();
+    public HashMap<String, Integer> documentsLenghts = new HashMap<String, Integer>();
 
     public void preInserts() {
 
@@ -34,11 +35,18 @@ public class TinySearchEngine implements TinySearchEngineBase {
             } else {
                 postingList.add(new Posting(word, attributes));
             }
+
         }
+
+        Integer sentencelength = sentence.getWords().size();
+        if (documentsLenghts.containsKey(attributes.document.name)) {
+            sentencelength += documentsLenghts.get(attributes.document.name);
+        }
+        documentsLenghts.put(attributes.document.name, sentencelength);
     }
 
     public void postInserts() {
-
+        // foreach posting
     }
 
     public List<Document> search(String s) {
