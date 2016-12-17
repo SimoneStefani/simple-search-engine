@@ -28,7 +28,12 @@ public class TinySearchEngine implements TinySearchEngineBase {
             }
 
             ArrayList<Posting> postingList = index.get(word);
-            postingList.add(new Posting(word, attributes)); // TODO: Add posting!
+            Posting newPosting = new Posting(word, attributes);
+            if (postingList.contains(newPosting)) {
+                postingList.get(postingList.indexOf(newPosting)).addDoc(newPosting);
+            } else {
+                postingList.add(new Posting(word, attributes));
+            }
         }
     }
 
