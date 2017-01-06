@@ -10,8 +10,8 @@ import se.kth.id1020.util.Document;
 import se.kth.id1020.util.Sentence;
 import se.kth.id1020.util.Word;
 
-import java.util.HashMap;
-import java.util.List;
+import javax.print.Doc;
+import java.util.*;
 
 public class TinySearchEngine implements TinySearchEngineBase {
     private HashMap<Word, HashMap<String, Posting>> index;
@@ -58,12 +58,62 @@ public class TinySearchEngine implements TinySearchEngineBase {
     }
 
     public List<Document> search(String s) {
+        // Parse query
         Query query = new Query(s);
 
-        return null;
+        // Compute Array of result
+        // TODO: complete query, implement caching (commutative)
+        ArrayList<ResultDocument> result = runQuery(query.getParsedQuery());
+
+        // TODO: set comparators
+        Comparator cmp;
+
+        // Sort according to strategy
+        Collections.sort(result, cmp);
+
+        // Convert into list of docs
+        List<Document> documentList = new LinkedList<Document>();
+        for (ResultDocument rd : result) { documentList.add(rd.getDocument()); }
+
+        return documentList;
+    }
+
+    private ArrayList<ResultDocument> runQuery(Subquery subQ) {
+        if (subQ.rightTerm == null) {
+            HashMap<String, Posting> temp = index.get(subQ.leftTerm);
+            ArrayList<ResultDocument> list = new ArrayList<ResultDocument>();
+            for (Posting value : temp.values()) {
+                list.add(new ResultDocument(value.getDocument(), value.getHits()));
+            }
+            return list;
+        }
+        ArrayList<ResultDocument> leftResult = runQuery((Subquery) subQ.leftTerm);
+        ArrayList<ResultDocument> rightResult = runQuery((Subquery) subQ.rightTerm);
+        String operator = subQ.operator;
+
+        if (operator.equals("+")) {
+            return resultIntersection(leftResult, rightResult);
+        } else if (operator.equals("|")) {
+            return resultUnion(leftResult, rightResult);
+        } else {
+            return resultDifference(leftResult, rightResult);
+        }
+    }
+
+    private ArrayList<ResultDocument> resultIntersection(ArrayList<ResultDocument> l, ArrayList<ResultDocument> r) {
+
+    }
+
+    private ArrayList<ResultDocument> resultUnion(ArrayList<ResultDocument> l, ArrayList<ResultDocument> r) {
+
+    }
+
+    private ArrayList<ResultDocument> resultDifference(ArrayList<ResultDocument> l, ArrayList<ResultDocument> r) {
+
     }
 
     public String infix(String s) {
+        // TODO: Add infix test
         return null;
     }
 }

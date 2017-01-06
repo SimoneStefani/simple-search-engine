@@ -41,11 +41,25 @@ public class ResultDocument {
         return popularity;
     }
 
+    public Document getDocument() {
+        return document;
+    }
+
     private double tf(int totalTerms) {
         return (double) this.hits / totalTerms;
     }
 
     private double idf(int totalDocs, int relevantDocs) {
         return Math.log10(totalDocs / relevantDocs);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ResultDocument that = (ResultDocument) o;
+
+        return this.document.name.equals(that.document.name);
     }
 }
