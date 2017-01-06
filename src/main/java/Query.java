@@ -4,71 +4,68 @@
  * Created by S. Stefani on 2016-12-02.
  */
 
-import java.util.ArrayList;
-import java.util.List;
+import edu.princeton.cs.algs4.Stack;
 
 public class Query {
-    private List<String> words;
-    private Posting.PostingComparator cmp;
+    private Subquery parsedQuery;
+    private String property;
+    private int direction;
 
-    public Query() {
-        this.words = new ArrayList<String>();
-        this.cmp = new Posting.PostingComparator("popularity", true);
+    public Query(String queryString) {
+        parseQuery(queryString);
     }
 
-    /**
-     * Get the searched words.
-     *
-     * @return an array of words
-     */
-    public List<String> getWords() {
-        return words;
-    }
+    private void parseQuery(String str) {
+        String[] parts = str.split("orderby");
+        String[] elements = parts[0].split("\\s+");
 
-    /**
-     * Get a comparator with specific comparison criteria based on the query.
-     * Default: popularity, ascending.
-     *
-     * @return a posting comparator
-     */
-    public Posting.PostingComparator getComparator() {
-        return cmp;
-    }
+        // Use two-stack algorithm to parse prefix notation
+        Stack<Comparable<String>> terms = new Stack<Comparable<String>>();
+        Stack<Comparable<String>> helper = new Stack<Comparable<String>>();
 
-    /**
-     * Parse a query string and extract the searched words together with the optional
-     * arguments property and direction
-     *
-     * @param queryInput is the query string
-     */
-    public void parseQuery(String queryInput) {
-        String[] query = queryInput.split("\\s+");
-        int queryLength = query.length;
-
-        for (int i = 0; i < queryLength; i++) {
-            if (query[i].equals("orderby")) {
-                if (i + 1 < queryLength) {
-                    if (query[i + 1].equals("count") || query[i + 1].equals("popularity") || query[i + 1].equals("occurrence")) {
-                        this.cmp.setProperty(query[i + 1]);
-                    } else {
-                        System.out.println("Choose a property among count, popularity and occurrence");
-                        break;
-                    }
-                }
-                if (i + 2 < queryLength) {
-                    if (query[i + 2].equals("asc")) {
-                        this.cmp.setDirection(true);
-                    } else if (query[i + 2].equals("desc")) {
-                        this.cmp.setDirection(false);
-                    } else {
-                        System.out.println("Choose a direction between asc and desc");
-                        break;
-                    }
-                }
-                break;
+        for (String el : elements) { terms.push(el); }
+        while (!terms.isEmpty()) {
+            Comparable<String> term = terms.pop();
+            String operands = "+|-";
+            if (operands.contains(term.toString())) {
+                Comparable<String> leftSide = helper.pop();
+                Comparable<String> rightSide = helper.pop();
+                helper.push(new Subquery(leftSide, term.toString(), rightSide));
             } else {
-                words.add(query[i]);
+                helper.push(term);
             }
         }
+
+        Comparable<String> resultQuery = helper.pop();
+        parsedQuery = resultQuery instanceof String ? new Subquery(resultQuery) : (Subquery) resultQuery;
+
+        if (parts.length < 2) {
+            return;
+        }
+
+        // Parse sorting properties
+        if (parts[1].contains("relevance")) {
+            property = "RELEVANCE";
+        } else if (parts[1].contains("popularity")) {
+            property = "POPULARITY";
+        }
+
+        if (parts[1].contains("asc")) {
+            direction = 1;
+        } else if (parts[1].contains("desc")) {
+            direction = -1;
+        }
+    }
+
+    public Subquery getParsedQuery() {
+        return parsedQuery;
+    }
+
+    public String getProperty() {
+        return property;
+    }
+
+    public int getDirection() {
+        return direction;
     }
 }
