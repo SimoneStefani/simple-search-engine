@@ -5,6 +5,8 @@
  */
 
 import se.kth.id1020.util.Document;
+
+import java.util.Comparator;
 import java.util.HashMap;
 
 public class ResultDocument {
@@ -61,5 +63,33 @@ public class ResultDocument {
         ResultDocument that = (ResultDocument) o;
 
         return this.document.name.equals(that.document.name);
+    }
+
+    public static class PopularityComparator implements Comparator<ResultDocument> {
+        private int direction;
+
+        public PopularityComparator(int direction) {
+            this.direction = direction;
+        }
+
+        public int compare(ResultDocument o1, ResultDocument o2) {
+            if (o1.getPopularity() < o2.getPopularity()) return -1 * direction;
+            if (o1.getPopularity() > o2.getPopularity()) return direction;
+            return 0;
+        }
+    }
+
+    public static class RelevanceComparator implements Comparator<ResultDocument> {
+        private int direction;
+
+        public RelevanceComparator(int direction) {
+            this.direction = direction;
+        }
+
+        public int compare(ResultDocument o1, ResultDocument o2) {
+            if (o1.getRelevance() < o2.getRelevance()) return -1 * direction;
+            if (o1.getRelevance() > o2.getRelevance()) return direction;
+            return 0;
+        }
     }
 }

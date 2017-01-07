@@ -9,16 +9,14 @@ import se.kth.id1020.util.Attributes;
 import se.kth.id1020.util.Document;
 import se.kth.id1020.util.Sentence;
 import se.kth.id1020.util.Word;
-
-import javax.print.Doc;
 import java.util.*;
 
 public class TinySearchEngine implements TinySearchEngineBase {
-    private HashMap<Word, HashMap<String, Posting>> index;
+    private HashMap<String, HashMap<String, Posting>> index;
     private HashMap<String, Integer> documentsLengths;
 
     public TinySearchEngine() {
-        this.index = new HashMap<Word, HashMap<String, Posting>>();
+        this.index = new HashMap<String, HashMap<String, Posting>>();
         this.documentsLengths = new HashMap<String, Integer>();
     }
 
@@ -29,12 +27,12 @@ public class TinySearchEngine implements TinySearchEngineBase {
     public void insert(Sentence sentence, Attributes attributes) {
         for (Word word : sentence.getWords()) {
             // Add word to index if not in
-            if (!index.containsKey(word)) {
-                index.put(word, new HashMap<String, Posting>());
+            if (!index.containsKey(word.word)) {
+                index.put(word.word, new HashMap<String, Posting>());
             }
 
             // Create new posting
-            HashMap<String, Posting> postingList = index.get(word);
+            HashMap<String, Posting> postingList = index.get(word.word);
             Posting newPosting = new Posting(word, attributes);
 
             // Update posting if existent or add
@@ -65,11 +63,12 @@ public class TinySearchEngine implements TinySearchEngineBase {
         // TODO: complete query, implement caching (commutative)
         ArrayList<ResultDocument> result = runQuery(query.getParsedQuery());
 
-        // TODO: set comparators
-        Comparator cmp;
-
-        // Sort according to strategy
-        Collections.sort(result, cmp);
+        // If sorting is specified use comparator to sort
+        if (query.getProperty() != null && query.getProperty().equals("POPULARITY")) {
+            Collections.sort(result, new ResultDocument.PopularityComparator(query.getDirection()));
+        } else if (query.getProperty() != null && query.getProperty().equals("RELEVANCE")) {
+            Collections.sort(result, new ResultDocument.RelevanceComparator(query.getDirection()));
+        }
 
         // Convert into list of docs
         List<Document> documentList = new LinkedList<Document>();
@@ -79,11 +78,15 @@ public class TinySearchEngine implements TinySearchEngineBase {
     }
 
     private ArrayList<ResultDocument> runQuery(Subquery subQ) {
+        System.out.println(subQ.toString());
         if (subQ.rightTerm == null) {
             HashMap<String, Posting> temp = index.get(subQ.leftTerm);
             ArrayList<ResultDocument> list = new ArrayList<ResultDocument>();
             for (Posting value : temp.values()) {
-                list.add(new ResultDocument(value.getDocument(), value.getHits()));
+                ResultDocument newRD = new ResultDocument(value.getDocument(), value.getHits());
+                newRD.computeRelevance(documentsLengths, temp.size());
+                list.add(newRD);
+                System.out.println(newRD + " - hits: " + newRD.getHits() + " - pop: " + newRD.getPopularity() + " - rel: " + newRD.getRelevance());
             }
             return list;
         }
@@ -101,15 +104,15 @@ public class TinySearchEngine implements TinySearchEngineBase {
     }
 
     private ArrayList<ResultDocument> resultIntersection(ArrayList<ResultDocument> l, ArrayList<ResultDocument> r) {
-
+        return null;
     }
 
     private ArrayList<ResultDocument> resultUnion(ArrayList<ResultDocument> l, ArrayList<ResultDocument> r) {
-
+        return null;
     }
 
     private ArrayList<ResultDocument> resultDifference(ArrayList<ResultDocument> l, ArrayList<ResultDocument> r) {
-
+        return null;
     }
 
     public String infix(String s) {
