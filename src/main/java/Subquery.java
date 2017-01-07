@@ -15,13 +15,6 @@ public class Subquery implements Comparable<String> {
 
     public Subquery(Comparable<String> leftTerm, String operator, Comparable<String> rightTerm) {
 
-        /*// If operator is commutative order terms ascending
-        if ((operator.equals("|") || operator.equals("+")) && leftTerm.toString().compareTo(rightTerm.toString()) >= 1) {
-            Comparable<String> t = leftTerm;
-            leftTerm = rightTerm;
-            rightTerm = t;
-        }*/
-
         this.leftTerm = leftTerm;
         this.operator = operator;
         this.rightTerm = rightTerm;

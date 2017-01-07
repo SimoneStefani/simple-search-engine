@@ -60,7 +60,7 @@ public class TinySearchEngine implements TinySearchEngineBase {
         Query query = new Query(s);
 
         // Compute Array of result
-        // TODO: complete query, implement caching (commutative)
+        // TODO: complete query (merging), implement caching and commutativity
         ArrayList<ResultDocument> result = runQuery(query.getParsedQuery());
 
         // If sorting is specified use comparator to sort
@@ -97,8 +97,8 @@ public class TinySearchEngine implements TinySearchEngineBase {
             return list;
         }
 
-        ArrayList<ResultDocument> leftResult = runQuery((Subquery) subQ.leftTerm);
-        ArrayList<ResultDocument> rightResult = runQuery((Subquery) subQ.rightTerm);
+        ArrayList<ResultDocument> leftResult = runQuery(subQ.leftTerm instanceof Subquery ? (Subquery) subQ.leftTerm : new Subquery(subQ.leftTerm));
+        ArrayList<ResultDocument> rightResult = runQuery(subQ.rightTerm instanceof Subquery ? (Subquery) subQ.rightTerm : new Subquery(subQ.rightTerm));
         String operator = subQ.operator;
 
         if (operator.equals("+")) {
@@ -122,6 +122,16 @@ public class TinySearchEngine implements TinySearchEngineBase {
     private ArrayList<ResultDocument> resultUnion(ArrayList<ResultDocument> l, ArrayList<ResultDocument> r) {
         ArrayList<ResultDocument> result = new ArrayList<ResultDocument>();
         result.addAll(l);
+        for (ResultDocument rd : r) {
+            if (!l.contains(rd)) { result.add(rd); }
+        }
+
+        return result;
+    }
+
+    private ArrayList<ResultDocument> resultDifference(ArrayList<ResultDocument> l, ArrayList<ResultDocument> r) {
+        ArrayList<ResultDocument> result = new ArrayList<ResultDocument>();
+
         for (ResultDocument rd : l) {
             if (!r.contains(rd)) { result.add(rd); }
         }
@@ -129,13 +139,9 @@ public class TinySearchEngine implements TinySearchEngineBase {
         return result;
     }
 
-    private ArrayList<ResultDocument> resultDifference(ArrayList<ResultDocument> l, ArrayList<ResultDocument> r) {
-        return null;
-    }
-
     public String infix(String s) {
         Query query = new Query(s);
 
-        return null;
+        return query.getParsedQuery().toString();
     }
 }
