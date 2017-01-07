@@ -9,7 +9,7 @@ import se.kth.id1020.util.Document;
 import java.util.Comparator;
 import java.util.HashMap;
 
-public class ResultDocument {
+public class ResultDocument implements Comparable<ResultDocument> {
     private int hits;
     private double relevance;
     private Document document;
@@ -63,6 +63,10 @@ public class ResultDocument {
         ResultDocument that = (ResultDocument) o;
 
         return this.document.name.equals(that.document.name);
+    }
+
+    public int compareTo(ResultDocument o) {
+        return this.document.name.compareTo(o.document.name);
     }
 
     public static class PopularityComparator implements Comparator<ResultDocument> {

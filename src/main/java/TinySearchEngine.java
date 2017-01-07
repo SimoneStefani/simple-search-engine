@@ -86,10 +86,17 @@ public class TinySearchEngine implements TinySearchEngineBase {
                 ResultDocument newRD = new ResultDocument(value.getDocument(), value.getHits());
                 newRD.computeRelevance(documentsLengths, temp.size());
                 list.add(newRD);
-                System.out.println(newRD + " - hits: " + newRD.getHits() + " - pop: " + newRD.getPopularity() + " - rel: " + newRD.getRelevance());
             }
+
+            Collections.sort(list);
+
+            for (ResultDocument re: list) {
+                System.out.println(re.getDocument().name + " - hits: " + re.getHits() + " - pop: " + re.getPopularity() + " - rel: " + re.getRelevance());
+            }
+
             return list;
         }
+
         ArrayList<ResultDocument> leftResult = runQuery((Subquery) subQ.leftTerm);
         ArrayList<ResultDocument> rightResult = runQuery((Subquery) subQ.rightTerm);
         String operator = subQ.operator;
@@ -104,11 +111,22 @@ public class TinySearchEngine implements TinySearchEngineBase {
     }
 
     private ArrayList<ResultDocument> resultIntersection(ArrayList<ResultDocument> l, ArrayList<ResultDocument> r) {
-        return null;
+        ArrayList<ResultDocument> result = new ArrayList<ResultDocument>();
+        for (ResultDocument rd : l) {
+            if (r.contains(rd)) { result.add(rd); }
+        }
+
+        return result;
     }
 
     private ArrayList<ResultDocument> resultUnion(ArrayList<ResultDocument> l, ArrayList<ResultDocument> r) {
-        return null;
+        ArrayList<ResultDocument> result = new ArrayList<ResultDocument>();
+        result.addAll(l);
+        for (ResultDocument rd : l) {
+            if (!r.contains(rd)) { result.add(rd); }
+        }
+
+        return result;
     }
 
     private ArrayList<ResultDocument> resultDifference(ArrayList<ResultDocument> l, ArrayList<ResultDocument> r) {
@@ -116,7 +134,8 @@ public class TinySearchEngine implements TinySearchEngineBase {
     }
 
     public String infix(String s) {
-        // TODO: Add infix test
+        Query query = new Query(s);
+
         return null;
     }
 }
