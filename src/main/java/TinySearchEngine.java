@@ -60,7 +60,7 @@ public class TinySearchEngine implements TinySearchEngineBase {
         Query query = new Query(s);
 
         // Compute Array of result
-        // TODO: complete query (merging), implement caching and commutativity
+        // TODO: implement caching and commutativity
         ArrayList<ResultDocument> result = runQuery(query.getParsedQuery());
 
         // If sorting is specified use comparator to sort
@@ -74,11 +74,14 @@ public class TinySearchEngine implements TinySearchEngineBase {
         List<Document> documentList = new LinkedList<Document>();
         for (ResultDocument rd : result) { documentList.add(rd.getDocument()); }
 
+
+        for (ResultDocument re: result) {
+            // System.out.println(re.getDocument().name + " - hits: " + re.getHits() + " - pop: " + re.getPopularity() + " - rel: " + re.getRelevance());
+        }
         return documentList;
     }
 
     private ArrayList<ResultDocument> runQuery(Subquery subQ) {
-        System.out.println(subQ.toString());
         if (subQ.rightTerm == null) {
             HashMap<String, Posting> temp = index.get(subQ.leftTerm);
             ArrayList<ResultDocument> list = new ArrayList<ResultDocument>();
@@ -89,10 +92,6 @@ public class TinySearchEngine implements TinySearchEngineBase {
             }
 
             Collections.sort(list);
-
-            for (ResultDocument re: list) {
-                System.out.println(re.getDocument().name + " - hits: " + re.getHits() + " - pop: " + re.getPopularity() + " - rel: " + re.getRelevance());
-            }
 
             return list;
         }
@@ -113,7 +112,10 @@ public class TinySearchEngine implements TinySearchEngineBase {
     private ArrayList<ResultDocument> resultIntersection(ArrayList<ResultDocument> l, ArrayList<ResultDocument> r) {
         ArrayList<ResultDocument> result = new ArrayList<ResultDocument>();
         for (ResultDocument rd : l) {
-            if (r.contains(rd)) { result.add(rd); }
+            int ind = Collections.binarySearch(r, rd);
+            if (ind >= 0) {
+                result.add(merge(rd, r.get(ind)));
+            }
         }
 
         return result;
@@ -123,7 +125,12 @@ public class TinySearchEngine implements TinySearchEngineBase {
         ArrayList<ResultDocument> result = new ArrayList<ResultDocument>();
         result.addAll(l);
         for (ResultDocument rd : r) {
-            if (!l.contains(rd)) { result.add(rd); }
+            int ind = Collections.binarySearch(result, rd);
+            if (ind >= 0) {
+                result.set(ind, merge(result.get(ind), rd));
+            } else {
+                result.add(-ind-1, rd);
+            }
         }
 
         return result;
@@ -137,6 +144,10 @@ public class TinySearchEngine implements TinySearchEngineBase {
         }
 
         return result;
+    }
+
+    private ResultDocument merge(ResultDocument u, ResultDocument v) {
+        return new ResultDocument(u.getDocument(), u.getRelevance() + v.getRelevance());
     }
 
     public String infix(String s) {

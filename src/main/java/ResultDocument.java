@@ -21,10 +21,10 @@ public class ResultDocument implements Comparable<ResultDocument> {
         this.popularity = document.popularity;
     }
 
-    public ResultDocument(int hits, double relevance, Document document) {
-        this.hits = hits;
+    public ResultDocument(Document document, double relevance) {
         this.relevance = relevance;
         this.document = document;
+        this.popularity = document.popularity;
     }
 
     public void computeRelevance(HashMap<String, Integer> documentsLengths, int relevantDocs) {
