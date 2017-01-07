@@ -14,10 +14,12 @@ import java.util.*;
 public class TinySearchEngine implements TinySearchEngineBase {
     private HashMap<String, HashMap<String, Posting>> index;
     private HashMap<String, Integer> documentsLengths;
+    private HashMap<String, ArrayList<ResultDocument>> cache;
 
     public TinySearchEngine() {
         this.index = new HashMap<String, HashMap<String, Posting>>();
         this.documentsLengths = new HashMap<String, Integer>();
+        this.cache = new HashMap<String, ArrayList<ResultDocument>>();
     }
 
     public void preInserts() {
@@ -60,7 +62,7 @@ public class TinySearchEngine implements TinySearchEngineBase {
         Query query = new Query(s);
 
         // Compute Array of result
-        // TODO: implement caching and commutativity
+        // TODO: commutativity
         ArrayList<ResultDocument> result = runQuery(query.getParsedQuery());
 
         // If sorting is specified use comparator to sort
@@ -96,17 +98,28 @@ public class TinySearchEngine implements TinySearchEngineBase {
             return list;
         }
 
+        if (cache.containsKey(subQ.toString())) {
+            System.out.println("Cache hit: " + subQ.toString());
+            return cache.get(subQ.toString());
+        }
+
         ArrayList<ResultDocument> leftResult = runQuery(subQ.leftTerm instanceof Subquery ? (Subquery) subQ.leftTerm : new Subquery(subQ.leftTerm));
         ArrayList<ResultDocument> rightResult = runQuery(subQ.rightTerm instanceof Subquery ? (Subquery) subQ.rightTerm : new Subquery(subQ.rightTerm));
         String operator = subQ.operator;
 
+        ArrayList<ResultDocument> result;
         if (operator.equals("+")) {
-            return resultIntersection(leftResult, rightResult);
+            result = resultIntersection(leftResult, rightResult);
         } else if (operator.equals("|")) {
-            return resultUnion(leftResult, rightResult);
+            result = resultUnion(leftResult, rightResult);
         } else {
-            return resultDifference(leftResult, rightResult);
+            result = resultDifference(leftResult, rightResult);
         }
+
+        cache.put(subQ.toString(), result);
+        System.out.println("Add to cache: " + subQ.toString());
+
+        return result;
     }
 
     private ArrayList<ResultDocument> resultIntersection(ArrayList<ResultDocument> l, ArrayList<ResultDocument> r) {
