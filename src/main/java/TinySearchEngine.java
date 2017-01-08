@@ -65,6 +65,10 @@ public class TinySearchEngine implements TinySearchEngineBase {
         // TODO: commutativity
         ArrayList<ResultDocument> result = runQuery(query.getParsedQuery());
 
+        if (result == null) {
+            return null;
+        }
+
         // If sorting is specified use comparator to sort
         if (query.getProperty() != null && query.getProperty().equals("POPULARITY")) {
             Collections.sort(result, new ResultDocument.PopularityComparator(query.getDirection()));
@@ -85,6 +89,8 @@ public class TinySearchEngine implements TinySearchEngineBase {
 
     private ArrayList<ResultDocument> runQuery(Subquery subQ) {
         if (subQ.rightTerm == null) {
+
+            if (!index.containsKey(subQ.leftTerm)) return new ArrayList<ResultDocument>();
             HashMap<String, Posting> temp = index.get(subQ.leftTerm);
             ArrayList<ResultDocument> list = new ArrayList<ResultDocument>();
             for (Posting value : temp.values()) {
@@ -98,9 +104,9 @@ public class TinySearchEngine implements TinySearchEngineBase {
             return list;
         }
 
-        if (cache.containsKey(subQ.toString())) {
+        if (cache.containsKey(subQ.orderedQuery)) {
             System.out.println("Cache hit: " + subQ.toString());
-            return cache.get(subQ.toString());
+            return cache.get(subQ.orderedQuery);
         }
 
         ArrayList<ResultDocument> leftResult = runQuery(subQ.leftTerm instanceof Subquery ? (Subquery) subQ.leftTerm : new Subquery(subQ.leftTerm));
@@ -116,7 +122,7 @@ public class TinySearchEngine implements TinySearchEngineBase {
             result = resultDifference(leftResult, rightResult);
         }
 
-        cache.put(subQ.toString(), result);
+        cache.put(subQ.orderedQuery, result);
         System.out.println("Add to cache: " + subQ.toString());
 
         return result;

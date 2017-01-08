@@ -12,9 +12,11 @@ public class Subquery implements Comparable<String> {
 
     public Subquery(Comparable<String> leftTerm) {
         this.leftTerm = leftTerm;
+        this.orderedQuery = leftTerm.toString();
     }
 
     public Subquery(Comparable<String> leftTerm, String operator, Comparable<String> rightTerm) {
+
         this.leftTerm = leftTerm;
         this.operator = operator;
         this.rightTerm = rightTerm;

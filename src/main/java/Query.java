@@ -38,6 +38,7 @@ public class Query {
 
         Comparable<String> resultQuery = helper.pop();
         parsedQuery = resultQuery instanceof String ? new Subquery(resultQuery) : (Subquery) resultQuery;
+        computeUniqueNotation(parsedQuery);
 
         if (parts.length < 2) {
             return;
@@ -55,6 +56,31 @@ public class Query {
         } else if (parts[1].contains("desc")) {
             direction = -1;
         }
+    }
+
+    public String computeUniqueNotation(Subquery parsedQuery) {
+        if (parsedQuery.rightTerm == null) {
+            parsedQuery.orderedQuery = parsedQuery.leftTerm.toString();
+            return parsedQuery.leftTerm.toString();
+        }
+
+        String leftBare = computeUniqueNotation(parsedQuery.leftTerm instanceof Subquery ? (Subquery) parsedQuery.leftTerm : new Subquery(parsedQuery.leftTerm));
+        String rightBare = computeUniqueNotation(parsedQuery.rightTerm instanceof Subquery ? (Subquery) parsedQuery.rightTerm : new Subquery(parsedQuery.rightTerm));
+
+        String operator = parsedQuery.operator;
+        String ordered;
+
+        if (operator.equals("|") || operator.equals("+")) {
+            if (leftBare.compareTo(rightBare) > 0) {
+                ordered = rightBare + " " + leftBare + " " + operator;
+            } else {
+                ordered = leftBare + " " + rightBare + " " + operator;
+            }
+        } else {
+            ordered = leftBare + " " + rightBare + " " + operator;
+        }
+        parsedQuery.orderedQuery = ordered;
+        return ordered;
     }
 
     public Subquery getParsedQuery() {
