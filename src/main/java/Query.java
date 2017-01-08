@@ -58,7 +58,8 @@ public class Query {
         }
     }
 
-    public String computeUniqueNotation(Subquery parsedQuery) {
+    // Compute a unique notation of the query (important for commutativity of caching)
+    private String computeUniqueNotation(Subquery parsedQuery) {
         if (parsedQuery.rightTerm == null) {
             parsedQuery.orderedQuery = parsedQuery.leftTerm.toString();
             return parsedQuery.leftTerm.toString();
@@ -83,15 +84,9 @@ public class Query {
         return ordered;
     }
 
-    public Subquery getParsedQuery() {
-        return parsedQuery;
-    }
+    public Subquery getParsedQuery() { return parsedQuery; }
 
-    public String getProperty() {
-        return property;
-    }
+    public String getProperty() { return property; }
 
-    public int getDirection() {
-        return direction;
-    }
+    public int getDirection() { return direction; }
 }

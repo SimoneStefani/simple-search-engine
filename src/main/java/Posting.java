@@ -23,25 +23,11 @@ public class Posting {
         this.hits = 1;
     }
 
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
 
-    public String getWord() {
-        return word;
-    }
+    public Document getDocument() { return document; }
 
-    public Document getDocument() {
-        return document;
-    }
-
-    public int getPopularity() {
-        return popularity;
-    }
-
-    public int getHits() {
-        return hits;
-    }
+    public int getHits() { return hits; }
 
     public void updatePosting() {
         this.hits++;

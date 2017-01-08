@@ -16,6 +16,7 @@ public class TinySearchEngine implements TinySearchEngineBase {
     private HashMap<String, Integer> documentsLengths;
     private HashMap<String, ArrayList<ResultDocument>> cache;
 
+
     public TinySearchEngine() {
         this.index = new HashMap<String, HashMap<String, Posting>>();
         this.documentsLengths = new HashMap<String, Integer>();
@@ -62,12 +63,8 @@ public class TinySearchEngine implements TinySearchEngineBase {
         Query query = new Query(s);
 
         // Compute Array of result
-        // TODO: commutativity
         ArrayList<ResultDocument> result = runQuery(query.getParsedQuery());
-
-        if (result == null) {
-            return null;
-        }
+        if (result == null) { return null; }
 
         // If sorting is specified use comparator to sort
         if (query.getProperty() != null && query.getProperty().equals("POPULARITY")) {
@@ -80,10 +77,6 @@ public class TinySearchEngine implements TinySearchEngineBase {
         List<Document> documentList = new LinkedList<Document>();
         for (ResultDocument rd : result) { documentList.add(rd.getDocument()); }
 
-
-        for (ResultDocument re: result) {
-            // System.out.println(re.getDocument().name + " - hits: " + re.getHits() + " - pop: " + re.getPopularity() + " - rel: " + re.getRelevance());
-        }
         return documentList;
     }
 
@@ -105,7 +98,7 @@ public class TinySearchEngine implements TinySearchEngineBase {
         }
 
         if (cache.containsKey(subQ.orderedQuery)) {
-            System.out.println("Cache hit: " + subQ.toString());
+            // System.out.println("Cache hit: " + subQ.toString());
             return cache.get(subQ.orderedQuery);
         }
 
@@ -123,11 +116,12 @@ public class TinySearchEngine implements TinySearchEngineBase {
         }
 
         cache.put(subQ.orderedQuery, result);
-        System.out.println("Add to cache: " + subQ.toString());
+        // System.out.println("Add to cache: " + subQ.toString());
 
         return result;
     }
 
+    // Compute intersection of two queries
     private ArrayList<ResultDocument> resultIntersection(ArrayList<ResultDocument> l, ArrayList<ResultDocument> r) {
         ArrayList<ResultDocument> result = new ArrayList<ResultDocument>();
         for (ResultDocument rd : l) {
@@ -140,6 +134,7 @@ public class TinySearchEngine implements TinySearchEngineBase {
         return result;
     }
 
+    // Compute union of two queries
     private ArrayList<ResultDocument> resultUnion(ArrayList<ResultDocument> l, ArrayList<ResultDocument> r) {
         ArrayList<ResultDocument> result = new ArrayList<ResultDocument>();
         result.addAll(l);
@@ -155,6 +150,7 @@ public class TinySearchEngine implements TinySearchEngineBase {
         return result;
     }
 
+    // Compute difference of two queries
     private ArrayList<ResultDocument> resultDifference(ArrayList<ResultDocument> l, ArrayList<ResultDocument> r) {
         ArrayList<ResultDocument> result = new ArrayList<ResultDocument>();
 
@@ -171,7 +167,7 @@ public class TinySearchEngine implements TinySearchEngineBase {
 
     public String infix(String s) {
         Query query = new Query(s);
-
-        return query.getParsedQuery().toString();
+        String dir = query.getDirection() == 1 ? "asc" : "desc";
+        return query.getParsedQuery().toString() + " orderby " + query.getProperty().toLowerCase() + " " + dir;
     }
 }

@@ -52,7 +52,7 @@ public class ResultDocument implements Comparable<ResultDocument> {
     }
 
     private double idf(int totalDocs, int relevantDocs) {
-        return Math.log10(totalDocs / relevantDocs);
+        return Math.log10((double) totalDocs / (double) relevantDocs);
     }
 
     @Override
