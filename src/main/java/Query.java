@@ -11,10 +11,21 @@ public class Query {
     private String property;
     private int direction;
 
+    /**
+     * Receives the user input and run a parser on it.
+     *
+     * @param queryString the user input query string
+     */
     public Query(String queryString) {
         parseQuery(queryString);
     }
 
+    /**
+     * Parse a query string separating the composing elements:
+     * the parsed query (in form of sub-query), the sorting property and direction.
+     *
+     * @param str is the query to parse
+     */
     private void parseQuery(String str) {
         String[] parts = str.split("orderby");
         String[] elements = parts[0].split("\\s+");
@@ -58,7 +69,15 @@ public class Query {
         }
     }
 
-    // Compute a unique notation of the query (important for commutativity of caching)
+    /**
+     * Analyse a query (sub-query object) and generates a unique notation for each
+     * of the composing elements. This notation ensure that if two terms are connected
+     * by a commutative operator, they are also ordered alphabetically in the sub-query.
+     * This is important to allow the caching system to work with commutative queries.
+     *
+     * @param parsedQuery is the parsed version of the user query
+     * @return an ordered string version of the query
+     */
     private String computeUniqueNotation(Subquery parsedQuery) {
         if (parsedQuery.rightTerm == null) {
             parsedQuery.orderedQuery = parsedQuery.leftTerm.toString();
