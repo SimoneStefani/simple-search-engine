@@ -12,13 +12,13 @@ import se.kth.id1020.util.Word;
 import java.util.*;
 
 public class TinySearchEngine implements TinySearchEngineBase {
-    private HashMap<String, HashMap<String, Posting>> index;
+    private HashMap<String, HashMap<String, ResultDocument>> index;
     private HashMap<String, Integer> documentsLengths;
     private HashMap<String, ArrayList<ResultDocument>> cache;
 
 
     public TinySearchEngine() {
-        this.index = new HashMap<String, HashMap<String, Posting>>();
+        this.index = new HashMap<String, HashMap<String, ResultDocument>>();
         this.documentsLengths = new HashMap<String, Integer>();
         this.cache = new HashMap<String, ArrayList<ResultDocument>>();
     }
@@ -31,18 +31,18 @@ public class TinySearchEngine implements TinySearchEngineBase {
         for (Word word : sentence.getWords()) {
             // Add word to index if not in
             if (!index.containsKey(word.word)) {
-                index.put(word.word, new HashMap<String, Posting>());
+                index.put(word.word, new HashMap<String, ResultDocument>());
             }
 
             // Create new posting
-            HashMap<String, Posting> postingList = index.get(word.word);
-            Posting newPosting = new Posting(word, attributes);
+            HashMap<String, ResultDocument> postingList = index.get(word.word);
+            ResultDocument newPosting = new ResultDocument(attributes.document, 1);
 
             // Update posting if existent or add
             if (postingList.containsKey(newPosting.getName())) {
                 postingList.get(newPosting.getName()).updatePosting();
             } else {
-                postingList.put(newPosting.getName(), new Posting(word, attributes));
+                postingList.put(newPosting.getName(), new ResultDocument(attributes.document, 1));
             }
         }
 
@@ -84,9 +84,9 @@ public class TinySearchEngine implements TinySearchEngineBase {
         if (subQ.rightTerm == null) {
 
             if (!index.containsKey(subQ.leftTerm)) return new ArrayList<ResultDocument>();
-            HashMap<String, Posting> temp = index.get(subQ.leftTerm);
+            HashMap<String, ResultDocument> temp = index.get(subQ.leftTerm);
             ArrayList<ResultDocument> list = new ArrayList<ResultDocument>();
-            for (Posting value : temp.values()) {
+            for (ResultDocument value : temp.values()) {
                 ResultDocument newRD = new ResultDocument(value.getDocument(), value.getHits());
                 newRD.computeRelevance(documentsLengths, temp.size());
                 list.add(newRD);

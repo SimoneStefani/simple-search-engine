@@ -10,12 +10,14 @@ import java.util.Comparator;
 import java.util.HashMap;
 
 public class ResultDocument implements Comparable<ResultDocument> {
+    private String name;
     private int hits;
     private double relevance;
     private Document document;
     private int popularity;
 
     public ResultDocument(Document document, int hits) {
+        this.name = document.name;
         this.document = document;
         this.hits = hits;
         this.popularity = document.popularity;
@@ -29,6 +31,10 @@ public class ResultDocument implements Comparable<ResultDocument> {
 
     public void computeRelevance(HashMap<String, Integer> documentsLengths, int relevantDocs) {
         relevance = tf(documentsLengths.get(document.name)) * idf(documentsLengths.size(), relevantDocs);
+    }
+
+    public void updatePosting() {
+        this.hits++;
     }
 
     public int getHits() {
@@ -45,6 +51,10 @@ public class ResultDocument implements Comparable<ResultDocument> {
 
     public Document getDocument() {
         return document;
+    }
+
+    public String getName() {
+        return name;
     }
 
     private double tf(int totalTerms) {
