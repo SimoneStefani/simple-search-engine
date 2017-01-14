@@ -10,14 +10,12 @@ import java.util.Comparator;
 import java.util.HashMap;
 
 public class ResultDocument implements Comparable<ResultDocument> {
-    private String name;
-    private int hits;
-    private double relevance;
     private Document document;
+    private int hits;
     private int popularity;
+    private double relevance;
 
     public ResultDocument(Document document, int hits) {
-        this.name = document.name;
         this.document = document;
         this.hits = hits;
         this.popularity = document.popularity;
@@ -29,40 +27,46 @@ public class ResultDocument implements Comparable<ResultDocument> {
         this.popularity = document.popularity;
     }
 
+    /**
+     * Compute the relevance of posting respect to the executed query by means
+     * of tf-idf.
+     *
+     * @param documentsLengths contains the lengths of all the documents
+     * @param relevantDocs is the number of relevant docs for the query
+     */
     public void computeRelevance(HashMap<String, Integer> documentsLengths, int relevantDocs) {
         relevance = tf(documentsLengths.get(document.name)) * idf(documentsLengths.size(), relevantDocs);
     }
 
+    // Compute tf
+    private double tf(int totalTerms) {
+        return (double) this.hits / totalTerms;
+    }
+
+    // Compute idf
+    private double idf(int totalDocs, int relevantDocs) {
+        return Math.log10((double) totalDocs / (double) relevantDocs);
+    }
+
+    // Increment the number of hits
     public void updatePosting() {
         this.hits++;
-    }
-
-    public int getHits() {
-        return hits;
-    }
-
-    public double getRelevance() {
-        return relevance;
-    }
-
-    public int getPopularity() {
-        return popularity;
     }
 
     public Document getDocument() {
         return document;
     }
 
-    public String getName() {
-        return name;
+    public int getHits() {
+        return hits;
     }
 
-    private double tf(int totalTerms) {
-        return (double) this.hits / totalTerms;
+    public int getPopularity() {
+        return popularity;
     }
 
-    private double idf(int totalDocs, int relevantDocs) {
-        return Math.log10((double) totalDocs / (double) relevantDocs);
+    public double getRelevance() {
+        return relevance;
     }
 
     @Override

@@ -12,13 +12,13 @@ import se.kth.id1020.util.Word;
 import java.util.*;
 
 public class TinySearchEngine implements TinySearchEngineBase {
-    private HashMap<String, HashMap<String, ResultDocument>> index;
+    private HashMap<String, ArrayList<ResultDocument>> index;
     private HashMap<String, Integer> documentsLengths;
     private HashMap<String, ArrayList<ResultDocument>> cache;
 
 
     public TinySearchEngine() {
-        this.index = new HashMap<String, HashMap<String, ResultDocument>>();
+        this.index = new HashMap<String, ArrayList<ResultDocument>>();
         this.documentsLengths = new HashMap<String, Integer>();
         this.cache = new HashMap<String, ArrayList<ResultDocument>>();
     }
@@ -27,22 +27,30 @@ public class TinySearchEngine implements TinySearchEngineBase {
         System.out.println("Executing pre-insert...");
     }
 
+    /**
+     * Insert all the words of a sentence in the index.
+     *
+     * @param sentence is the current sentence
+     * @param attributes contain the parent document of the sentence
+     */
     public void insert(Sentence sentence, Attributes attributes) {
         for (Word word : sentence.getWords()) {
             // Add word to index if not in
             if (!index.containsKey(word.word)) {
-                index.put(word.word, new HashMap<String, ResultDocument>());
+                index.put(word.word, new ArrayList<ResultDocument>());
             }
 
             // Create new posting
-            HashMap<String, ResultDocument> postingList = index.get(word.word);
+            ArrayList<ResultDocument> postingList = index.get(word.word);
             ResultDocument newPosting = new ResultDocument(attributes.document, 1);
 
+            int ind = Collections.binarySearch(postingList, newPosting);
+
             // Update posting if existent or add
-            if (postingList.containsKey(newPosting.getName())) {
-                postingList.get(newPosting.getName()).updatePosting();
+            if (ind < 0) {
+                postingList.add(-ind-1, newPosting);
             } else {
-                postingList.put(newPosting.getName(), new ResultDocument(attributes.document, 1));
+                postingList.get(ind).updatePosting();
             }
         }
 
@@ -58,6 +66,13 @@ public class TinySearchEngine implements TinySearchEngineBase {
         System.out.println("Executing post-insert...");
     }
 
+    /**
+     * Parse a user query and search for all the elements that satisfy such query.
+     * Order the results according to the user input.
+     *
+     * @param s is the input query string
+     * @return the list of docs that satisfy the query
+     */
     public List<Document> search(String s) {
         // Parse query
         Query query = new Query(s);
@@ -73,30 +88,34 @@ public class TinySearchEngine implements TinySearchEngineBase {
             Collections.sort(result, new ResultDocument.RelevanceComparator(query.getDirection()));
         }
 
-        // Convert into list of docs
+        // Convert into list of documents
         List<Document> documentList = new LinkedList<Document>();
         for (ResultDocument rd : result) { documentList.add(rd.getDocument()); }
 
         return documentList;
     }
 
+    /**
+     * Recursively analyse the query and compute the results considering the query operators.
+     *
+     * @param subQ is the sub-query object (result of the query parsing)
+     * @return an array list of documents
+     */
     private ArrayList<ResultDocument> runQuery(Subquery subQ) {
         if (subQ.rightTerm == null) {
 
             if (!index.containsKey(subQ.leftTerm)) return new ArrayList<ResultDocument>();
-            HashMap<String, ResultDocument> temp = index.get(subQ.leftTerm);
             ArrayList<ResultDocument> list = new ArrayList<ResultDocument>();
-            for (ResultDocument value : temp.values()) {
+            for (ResultDocument value : index.get(subQ.leftTerm)) {
                 ResultDocument newRD = new ResultDocument(value.getDocument(), value.getHits());
-                newRD.computeRelevance(documentsLengths, temp.size());
+                newRD.computeRelevance(documentsLengths, index.get(subQ.leftTerm).size());
                 list.add(newRD);
             }
-
-            Collections.sort(list);
 
             return list;
         }
 
+        // Check if the query is cached
         if (cache.containsKey(subQ.orderedQuery)) {
             // System.out.println("Cache hit: " + subQ.toString());
             return cache.get(subQ.orderedQuery);
@@ -106,6 +125,7 @@ public class TinySearchEngine implements TinySearchEngineBase {
         ArrayList<ResultDocument> rightResult = runQuery(subQ.rightTerm instanceof Subquery ? (Subquery) subQ.rightTerm : new Subquery(subQ.rightTerm));
         String operator = subQ.operator;
 
+        // Run query operations (union, intersection, difference)
         ArrayList<ResultDocument> result;
         if (operator.equals("+")) {
             result = resultIntersection(leftResult, rightResult);
@@ -115,6 +135,7 @@ public class TinySearchEngine implements TinySearchEngineBase {
             result = resultDifference(leftResult, rightResult);
         }
 
+        // Cache the result
         cache.put(subQ.orderedQuery, result);
         // System.out.println("Add to cache: " + subQ.toString());
 
@@ -165,6 +186,12 @@ public class TinySearchEngine implements TinySearchEngineBase {
         return new ResultDocument(u.getDocument(), u.getRelevance() + v.getRelevance());
     }
 
+    /**
+     * Output the infix version of the query string (useful to check correctness of parser)
+     *
+     * @param s is the user query string
+     * @return the infix version of query
+     */
     public String infix(String s) {
         Query query = new Query(s);
         String dir = query.getDirection() == 1 ? "asc" : "desc";
